@@ -100,7 +100,7 @@ const MPESA_CONSUMER_KEY = 'obwk59KLi8Yj6amsXHPey8nhIia7DCq8GoOdqgkUsRbIdShM';
 const MPESA_CONSUMER_SECRET = 'sGAMoExEenhibAEVvxaJYShmQGAJ3PHaVul63tqOlHUiYPLtUe4LAPpi51SXbgAv';
 const MPESA_SHORTCODE = '174379'; // Sandbox Shortcode
 const MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'; 
-const MPESA_CALLBACK_URL = const MPESA_CALLBACK_URL = 'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
+const MPESA_CALLBACK_URL = 'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
 
 // Helper: Generate OAuth Token from Safaricom
 async function getMpesaToken() {
