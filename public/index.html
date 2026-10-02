@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reymass Tech Suite - Agency-Managed IT Marketplace</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            900: '#134e4a',
+                            navy: '#0b132b',
+                            card: '#1c2541'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0b132b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="h-full flex flex-col bg-slate-950 text-slate-100 antialiased overflow-x-hidden">
+
+    <!-- TOP NAVIGATION -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('landing')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-teal-500/20">
+                    R
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white">REYMASS</span>
+                    <span class="text-xs block text-teal-400 font-semibold tracking-wider uppercase -mt-1">Tech Suite</span>
+                </div>
+            </div>
+
+            <!-- Role Switcher Navigation Tabs -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button id="nav-landing" onclick="switchView('landing')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-teal-400 bg-slate-800 shadow">
+                    <i class="fa-solid font-size-xs fa-globe mr-2"></i>Home
+                </button>
+                <button id="nav-client" onclick="switchView('client')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-tie mr-2"></i>Client Portal
+                </button>
+                <button id="nav-specialist" onclick="switchView('specialist')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-gear mr-2"></i>Specialist Portal
+                </button>
+                <button id="nav-admin" onclick="switchView('admin')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white relative">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>Reymass Admin
+                    <span id="admin-badge" class="ml-2 px-1.5 py-0.5 text-xs bg-teal-500 text-slate-950 font-bold rounded-full">3</span>
+                </button>
+            </nav>
+
+            <!-- Quick Action / Interactive Demo Helper -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openSimulationModal()" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-400 hover:bg-teal-500/20 text-xs font-semibold transition">
+                    <i class="fa-solid fa-play"></i>
+                    <span>Quick Interactive Tour</span>
+                </button>
+                <div class="md:hidden">
+                    <select onchange="switchView(this.value)" class="bg-slate-800 border border-slate-700 text-sm rounded-lg p-2 text-white">
+                        <option value="landing">Overview</option>
+                        <option value="client">Client Portal</option>
+                        <option value="specialist">Specialist Portal</option>
+                        <option value="admin">Reymass Admin</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 custom-scrollbar">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: PUBLIC HOMEPAGE / LANDING          -->
+        <!-- ========================================== -->
+        <section id="view-landing" class="space-y-12">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-8 sm:p-12">
+                <div class="absolute -right-20 -top-20 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold">
+                        <i class="fa-solid fa-shield-check"></i>
+                        <span>Guaranteed Quality & Escrow Protected</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                        We take care of the talking, agreements & quality. You get results.
+                    </h1>
+                    <p class="text-lg text-slate-400">
+                        Reymass Tech Suite bridges clients with top-tier, vetted IT specialists in Cloud, Networking, and Cybersecurity. We handle scope negotiation, escrow security, and technical QA so work is done right.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="switchView('client')" class="px-6 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold transition shadow-lg shadow-teal-500/25 flex items-center space-x-2">
+                            <span>Request an IT Specialist</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="switchView('specialist')" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-id-card"></i>
+                            <span>Join as Specialist</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How Reymass Agency Escrow Works -->
+            <div>
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <h2 class="text-2xl font-bold text-white">How the Reymass Shield Works</h2>
+                    <p class="text-slate-400 text-sm mt-1">End-to-end security and guarantee for both Clients and IT Specialists</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative">
+                        <div class="w-10 h-10 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-lg mb-4">1</div>
+                        <h3 class="font-bold text-white mb-2">1. Request & Scope</h3>
+                        <p class="text-xs text-slate-400">Client submits IT requirements. Reymass talks with client, clarifies technical requirements & freezes budget.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative">
+                        <div class="w-10 h-10 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-lg mb-4">2</div>
+                        <h3 class="font-bold text-white mb-2">2. Match & Escrow</h3>
+                        <p class="text-xs text-slate-400">Reymass matches nearby vetted expert. Client deposits total project funds into Reymass Escrow Vault.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative">
+                        <div class="w-10 h-10 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-lg mb-4">3</div>
+                        <h3 class="font-bold text-white mb-2">3. Vetted Execution</h3>
+                        <p class="text-xs text-slate-400">Specialist performs technical deployment (Cloud, Cisco Routing, Firewall Audit) monitored by Reymass QA.</p>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative">
+                        <div class="w-10 h-10 rounded-lg bg-teal-500/10 text-teal-400 flex items-center justify-center font-bold text-lg mb-4">4</div>
+                        <h3 class="font-bold text-white mb-2">4. Review & Release</h3>
+                        <p class="text-xs text-slate-400">Client inspects and approves completed job. Funds are released safely to specialist minus agency fee.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Domains Grid -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-white mb-6 flex items-center space-x-2">
+                    <i class="fa-solid fa-layer-group text-teal-400"></i>
+                    <span>Core IT Domains Managed</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="p-4 bg-slate-950 border border-slate-800/80 rounded-xl">
+                        <i class="fa-solid fa-cloud text-teal-400 text-2xl mb-3"></i>
+                        <h4 class="font-semibold text-white">Cloud Architecture</h4>
+                        <p class="text-xs text-slate-400 mt-1">AWS, Azure, GCP Migration, Terraform, Kubernetes & Serverless infrastructure.</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 border border-slate-800/80 rounded-xl">
+                        <i class="fa-solid fa-network-wired text-cyan-400 text-2xl mb-3"></i>
+                        <h4 class="font-semibold text-white">Enterprise Networking</h4>
+                        <p class="text-xs text-slate-400 mt-1">Cisco, Mikrotik routing/switching, VPN tunnels, Structured Cabling, Fiber.</p>
+                    </div>
+                    <div class="p-4 bg-slate-950 border border-slate-800/80 rounded-xl">
+                        <i class="fa-solid fa-shield-cat text-emerald-400 text-2xl mb-3"></i>
+                        <h4 class="font-semibold text-white">Cybersecurity & Audits</h4>
+                        <p class="text-xs text-slate-400 mt-1">Penetration testing, Firewall configuration, SIEM setup, SOC monitoring & Compliance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: CLIENT PORTAL & SUBMISSION SYSTEM  -->
+        <!-- ========================================== -->
+        <section id="view-client" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <span>Client Project Portal</span>
+                        <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/30 px-2 py-0.5 rounded-full font-medium">Reymass Managed</span>
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Submit your IT needs. Reymass negotiates scope, enforces quality, and protects your payment.</p>
+                </div>
+                <button onclick="document.getElementById('new-project-form').scrollIntoView({behavior: 'smooth'})" class="px-4 py-2 bg-teal-500 text-slate-950 font-bold rounded-xl hover:bg-teal-400 transition text-sm flex items-center space-x-2 self-start md:self-auto">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Submit New IT Project</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Project Submission Form -->
+                <div id="new-project-form" class="lg:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
+                    <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3 flex items-center space-x-2">
+                        <i class="fa-solid fa-paper-plane text-teal-400"></i>
+                        <span>New Request Brief</span>
+                    </h3>
+                    <form id="projectSubmissionForm" onsubmit="handleCreateProject(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Company / Client Name</label>
+                            <input type="text" id="clientName" required placeholder="e.g. Apex Logistics Ltd" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Client Location / Region</label>
+                            <input type="text" id="clientLocation" required placeholder="e.g. Westlands, Nairobi" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">IT Domain</label>
+                            <select id="projectCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                                <option value="Networking">Networking & Infra (Cisco/Mikrotik)</option>
+                                <option value="Cloud">Cloud Architecture (AWS/Azure)</option>
+                                <option value="Cybersecurity">Cybersecurity & Firewall Audit</option>
+                                <option value="Systems Administration">Systems & Server Deployment</option>
+                                <option value="Software/Web">Custom Web / Enterprise Software</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Budget ($)</label>
+                                <input type="number" id="projectBudget" required min="100" placeholder="1500" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Urgency</label>
+                                <select id="projectUrgency" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                                    <option value="Normal">Normal (1-2 Weeks)</option>
+                                    <option value="High">High (3-5 Days)</option>
+                                    <option value="Emergency">Emergency (Immediate)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Detailed Scope Description</label>
+                            <textarea id="projectScope" required rows="4" placeholder="Describe the technical issue or deployment required..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-teal-500/20 text-sm">
+                            Submit Project to Reymass
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Client Active Projects List & Live Status -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-list-check text-teal-400"></i>
+                            <span>Your Active Projects & Escrow Status</span>
+                        </h3>
+                        <span class="text-xs text-slate-400">Live Backend State</span>
+                    </div>
+
+                    <div id="clientProjectsList" class="space-y-4">
+                        <!-- Dynamic Injection -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: SPECIALIST PORTAL & VETTING SYSTEM -->
+        <!-- ========================================== -->
+        <section id="view-specialist" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <span>IT Specialist Portal</span>
+                        <span class="text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-medium">Vetted Pool</span>
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Get matched with client briefs handled by Reymass. Guaranteed payouts upon completion.</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400">Active Specialist Profile:</span>
+                    <select id="specialistSelector" onchange="loadSpecialistProfile()" class="bg-slate-900 border border-slate-700 text-sm text-teal-400 font-semibold rounded-xl px-3 py-1.5 focus:outline-none">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Specialist Profile & Merits Showcase -->
+                <div class="lg:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5">
+                    <div class="flex items-center space-x-4 border-b border-slate-800 pb-4">
+                        <div id="spec-avatar" class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center font-bold text-2xl text-slate-950">
+                            EK
+                        </div>
+                        <div>
+                            <h3 id="spec-name" class="font-bold text-lg text-white">Emmanuel Kiprop</h3>
+                            <p id="spec-role" class="text-xs text-teal-400">Cloud & Security Architect</p>
+                            <span id="spec-status-badge" class="inline-block mt-1 px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-bold">
+                                <i class="fa-solid fa-badge-check mr-1"></i>Reymass Verified
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1 font-medium">Primary Domain & Location</span>
+                            <div class="flex items-center justify-between text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                                <span id="spec-domain" class="text-slate-200 font-semibold"><i class="fa-solid fa-cloud text-teal-400 mr-2"></i>Cloud</span>
+                                <span id="spec-location" class="text-slate-400"><i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>Nairobi, KE</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1 font-medium">Verified Certifications & Merits</span>
+                            <div id="spec-certs" class="flex flex-wrap gap-1.5">
+                                <!-- Cert Badges -->
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1 font-medium">Portfolio / Proof of Merit</span>
+                            <a id="spec-portfolio" href="#" target="_blank" class="text-xs text-teal-400 hover:underline flex items-center space-x-1 truncate bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                                <i class="fa-solid fa-link"></i>
+                                <span class="truncate">https://github.com/emmanuel-cloud-portfolio</span>
+                            </a>
+                        </div>
+
+                        <!-- Add/Edit Merits Modal Trigger -->
+                        <button onclick="openAddMeritModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition">
+                            <i class="fa-solid fa-plus-circle mr-1"></i> Add Certification / Merit Proof
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Available Client Jobs Matching Location & Skill -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-briefcase text-teal-400"></i>
+                            <span>Matching Client Projects in Your Area</span>
+                        </h3>
+                        <span class="text-xs text-slate-400">Pre-scoped by Reymass</span>
+                    </div>
+
+                    <div id="specialistJobsList" class="space-y-4">
+                        <!-- Dynamic Injection -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: REYMASS ADMIN & ESCROW CENTER      -->
+        <!-- ========================================== -->
+        <section id="view-admin" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <span>Reymass Admin Control Center</span>
+                        <span class="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-medium">Agency Management Desk</span>
+                    </h1>
+                    <p class="text-slate-400 text-sm mt-1">Review requests, assign qualified local specialists, manage escrow deposits, and approve releases.</p>
+                </div>
+                <!-- Escrow Metrics Summary -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-right">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Total Escrow Vault</span>
+                        <span id="admin-escrow-total" class="text-lg font-extrabold text-teal-400">$0.00</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-right">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Reymass 15% Fees</span>
+                        <span id="admin-agency-fees" class="text-lg font-extrabold text-purple-400">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Projects Grid -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-sliders text-teal-400"></i>
+                        <span>All Client Projects & Specialist Matching Queue</span>
+                    </h3>
+                </div>
+
+                <div id="adminProjectsList" class="space-y-4">
+                    <!-- Dynamic Injection -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: ADD CERTIFICATE / MERIT (FOR SPECIALISTS) -->
+    <div id="meritModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-white text-lg">Add Qualification / Merit Proof</h3>
+                <button onclick="closeModal('meritModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="handleSaveMerit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-300 font-semibold uppercase mb-1">Certification or Project Title</label>
+                    <input type="text" id="meritTitle" required placeholder="e.g. AWS Certified Solutions Architect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 font-semibold uppercase mb-1">Proof URL / Badge Link</label>
+                    <input type="url" id="meritUrl" required placeholder="https://credly.com/your-badge" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('meritModal')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs rounded-xl transition">Save Qualification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: INTERACTIVE WALKTHROUGH SIMULATOR -->
+    <div id="simModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 space-y-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-lg">Reymass Business Lifecycle Simulator</h3>
+                </div>
+                <button onclick="closeModal('simModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-sm text-slate-300">
+                Test how Reymass seamlessly handles negotiations, holds client funds in escrow, matches local experts, and releases payouts only after 100% satisfaction.
+            </p>
+
+            <div class="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs">
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold flex items-center justify-center">1</span>
+                    <span class="text-slate-200">Client posts project brief (e.g. Cybersecurity Audit)</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold flex items-center justify-center">2</span>
+                    <span class="text-slate-200">Reymass Reviews & Client deposits <b>$2,000</b> into Escrow Vault</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold flex items-center justify-center">3</span>
+                    <span class="text-slate-200">Reymass assigns verified nearby expert based on portfolio merit</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold flex items-center justify-center">4</span>
+                    <span class="text-slate-200">Specialist delivers work -> Client Approves -> Escrow releases <b>$1,700</b> to Specialist & <b>$300</b> (15%) to Reymass</span>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <button onclick="resetSystemState()" class="text-xs text-rose-400 hover:underline">Reset Demo Data</button>
+                <button onclick="closeModal('simModal')" class="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs rounded-xl transition">
+                    Got it, Let's Try!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION STATE & LOGIC -->
+    <script>
+        // INITIAL MOCK DATA STORE
+        const DEFAULT_SPECIALISTS = [
+            {
+                id: 'spec-1',
+                name: 'Emmanuel Kiprop',
+                domain: 'Cloud Architecture',
+                location: 'Nairobi, Kenya',
+                certifications: ['AWS Solutions Architect', 'Terraform Assoc.', 'Azure Administrator'],
+                portfolio: 'https://github.com/emmanuel-cloud-portfolio',
+                rating: 4.9,
+                completedJobs: 14
+            },
+            {
+                id: 'spec-2',
+                name: 'Sarah Jenkins',
+                domain: 'Cybersecurity',
+                location: 'Nairobi, Kenya',
+                certifications: ['CompTIA Security+', 'CEH (Certified Ethical Hacker)', 'CISSP'],
+                portfolio: 'https://sarah-sec-audit.io',
+                rating: 5.0,
+                completedJobs: 22
+            },
+            {
+                id: 'spec-3',
+                name: 'David Ochieng',
+                domain: 'Enterprise Networking',
+                location: 'Mombasa, Kenya',
+                certifications: ['Cisco CCNA', 'CCNP Enterprise', 'Mikrotik MTCNA'],
+                portfolio: 'https://github.com/dochieng-network-lab',
+                rating: 4.8,
+                completedJobs: 9
+            }
+        ];
+
+        const DEFAULT_PROJECTS = [
+            {
+                id: 'PRJ-101',
+                clientName: 'Apex Banking Logistics',
+                clientLocation: 'Nairobi, Kenya',
+                category: 'Cybersecurity',
+                budget: 2500,
+                urgency: 'High',
+                scope: 'Full vulnerability assessment and firewall hardening for hybrid cloud network.',
+                status: 'Awaiting Match', // 'Awaiting Match', 'In Escrow & Execution', 'Awaiting Client Approval', 'Completed'
+                escrowStatus: 'Held in Escrow', // 'Pending Deposit', 'Held in Escrow', 'Released'
+                assignedSpecialistId: null,
+                createdAt: '2026-10-02'
+            },
+            {
+                id: 'PRJ-102',
+                clientName: 'Savannah Cloud Tech',
+                clientLocation: 'Nairobi, Kenya',
+                category: 'Cloud',
+                budget: 1800,
+                urgency: 'Normal',
+                scope: 'Migrate on-premise legacy database to AWS RDS with multi-AZ failover.',
+                status: 'In Escrow & Execution',
+                escrowStatus: 'Held in Escrow',
+                assignedSpecialistId: 'spec-1',
+                createdAt: '2026-10-01'
+            },
+            {
+                id: 'PRJ-103',
+                clientName: 'Coastline Resorts',
+                clientLocation: 'Mombasa, Kenya',
+                category: 'Networking',
+                budget: 1200,
+                urgency: 'Normal',
+                scope: 'Deploy VLANs, guest Wi-Fi portal, and Cisco routers for 3 hotel buildings.',
+                status: 'Completed',
+                escrowStatus: 'Released',
+                assignedSpecialistId: 'spec-3',
+                createdAt: '2026-09-28'
+            }
+        ];
+
+        // LOAD FROM LOCAL STORAGE OR FALLBACK
+        let state = {
+            projects: JSON.parse(localStorage.getItem('reymass_projects')) || DEFAULT_PROJECTS,
+            specialists: JSON.parse(localStorage.getItem('reymass_specialists')) || DEFAULT_SPECIALISTS,
+            activeSpecialistId: 'spec-1',
+            activeView: 'landing'
+        };
+
+        // VIEW SWITCHING LOGIC
+        function switchView(viewName) {
+            state.activeView = viewName;
+            
+            // Hide all views
+            ['landing', 'client', 'specialist', 'admin'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+                
+                const navBtn = document.getElementById(`nav-${v}`);
+                if (navBtn) {
+                    navBtn.classList.remove('text-teal-400', 'bg-slate-800', 'shadow');
+                    navBtn.classList.add('text-slate-400');
+                }
+            });
+
+            // Show selected view
+            const activeEl = document.getElementById(`view-${viewName}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+
+            const activeNavBtn = document.getElementById(`nav-${viewName}`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.add('text-teal-400', 'bg-slate-800', 'shadow');
+                activeNavBtn.classList.remove('text-slate-400');
+            }
+
+            // Refresh view components
+            renderAllViews();
+        }
+
+        function saveState() {
+            localStorage.setItem('reymass_projects', JSON.stringify(state.projects));
+            localStorage.setItem('reymass_specialists', JSON.stringify(state.specialists));
+            renderAllViews();
+        }
+
+        function resetSystemState() {
+            localStorage.removeItem('reymass_projects');
+            localStorage.removeItem('reymass_specialists');
+            state.projects = [...DEFAULT_PROJECTS];
+            state.specialists = [...DEFAULT_SPECIALISTS];
+            saveState();
+            closeModal('simModal');
+        }
+
+        // RENDER ALL VIEWS ACCORDING TO STATE
+        function renderAllViews() {
+            renderClientProjects();
+            renderSpecialistPortal();
+            renderAdminDashboard();
+            updateAdminBadge();
+        }
+
+        function updateAdminBadge() {
+            const pendingCount = state.projects.filter(p => p.status === 'Awaiting Match' || p.status === 'Awaiting Client Approval').length;
+            const badge = document.getElementById('admin-badge');
+            if (badge) badge.textContent = pendingCount;
+        }
+
+        // =========================================
+        // CLIENT PORTAL RENDERING & ACTIONS
+        // =========================================
+        function handleCreateProject(e) {
+            e.preventDefault();
+            const clientName = document.getElementById('clientName').value;
+            const clientLocation = document.getElementById('clientLocation').value;
+            const category = document.getElementById('projectCategory').value;
+            const budget = parseFloat(document.getElementById('projectBudget').value);
+            const urgency = document.getElementById('projectUrgency').value;
+            const scope = document.getElementById('projectScope').value;
+
+            const newProject = {
+                id: 'PRJ-' + Math.floor(100 + Math.random() * 900),
+                clientName,
+                clientLocation,
+                category,
+                budget,
+                urgency,
+                scope,
+                status: 'Awaiting Match',
+                escrowStatus: 'Pending Deposit',
+                assignedSpecialistId: null,
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+
+            state.projects.unshift(newProject);
+            saveState();
+
+            // Reset form
+            document.getElementById('projectSubmissionForm').reset();
+            alert(`Project ${newProject.id} submitted! Reymass team will review and secure escrow.`);
+        }
+
+        function renderClientProjects() {
+            const container = document.getElementById('clientProjectsList');
+            if (!container) return;
+
+            if (state.projects.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500 bg-slate-900 border border-slate-800 rounded-2xl">No projects found. Submit a request above.</div>`;
+                return;
+            }
+
+            container.innerHTML = state.projects.map(p => {
+                const assignedSpec = state.specialists.find(s => s.id === p.assignedSpecialistId);
+                
+                return `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 relative">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-white text-base">${p.clientName}</span>
+                                <span class="text-xs text-slate-400">(${p.id})</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>${p.clientLocation} • Submitting Domain: <b class="text-slate-200">${p.category}</b></p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${getStatusBadgeHTML(p.status)}
+                            ${getEscrowBadgeHTML(p.escrowStatus)}
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/60">
+                        "${p.scope}"
+                    </p>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 text-xs pt-1">
+                        <div class="flex items-center space-x-4">
+                            <div>
+                                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Budget</span>
+                                <span class="font-extrabold text-teal-400 text-sm">$${p.budget.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px] uppercase font-semibold">Assigned Specialist</span>
+                                <span class="font-semibold text-slate-200">
+                                    ${assignedSpec ? `<i class="fa-solid fa-user-check text-emerald-400 mr-1"></i>${assignedSpec.name}` : '<span class="text-slate-500 italic">Matching in progress...</span>'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Client Interactive Approval Button -->
+                        <div>
+                            ${p.status === 'Awaiting Client Approval' ? `
+                                <button onclick="approveClientProject('${p.id}')" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-emerald-500/20 text-xs">
+                                    <i class="fa-solid fa-circle-check mr-1"></i> Approve & Release Escrow
+                                </button>
+                            ` : ''}
+                            ${p.status === 'Completed' ? `
+                                <span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check mr-1"></i> Client Approved & Paid</span>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function approveClientProject(projectId) {
+            const prj = state.projects.find(p => p.id === projectId);
+            if (prj) {
+                prj.status = 'Completed';
+                prj.escrowStatus = 'Released';
+                saveState();
+                alert(`Thank you! Satisfaction confirmed. Payment for project ${projectId} released to specialist.`);
+            }
+        }
+
+        // =========================================
+        // SPECIALIST PORTAL RENDERING & ACTIONS
+        // =========================================
+        function renderSpecialistPortal() {
+            // Populate selector dropdown
+            const selector = document.getElementById('specialistSelector');
+            if (selector && selector.children.length !== state.specialists.length) {
+                selector.innerHTML = state.specialists.map(s => `
+                    <option value="${s.id}" ${s.id === state.activeSpecialistId ? 'selected' : ''}>${s.name} (${s.domain})</option>
+                `).join('');
+            }
+
+            loadSpecialistProfile();
+            renderSpecialistAvailableJobs();
+        }
+
+        function loadSpecialistProfile() {
+            const selector = document.getElementById('specialistSelector');
+            if (selector) state.activeSpecialistId = selector.value;
+
+            const spec = state.specialists.find(s => s.id === state.activeSpecialistId);
+            if (!spec) return;
+
+            document.getElementById('spec-name').textContent = spec.name;
+            document.getElementById('spec-role').textContent = `${spec.domain} Expert`;
+            document.getElementById('spec-domain').innerHTML = `<i class="fa-solid fa-microchip text-teal-400 mr-2"></i>${spec.domain}`;
+            document.getElementById('spec-location').innerHTML = `<i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>${spec.location}`;
+            document.getElementById('spec-portfolio').href = spec.portfolio;
+            document.getElementById('spec-portfolio').querySelector('span').textContent = spec.portfolio;
+
+            const certsContainer = document.getElementById('spec-certs');
+            certsContainer.innerHTML = spec.certifications.map(c => `
+                <span class="px-2 py-1 bg-slate-950 border border-slate-800 text-[11px] text-teal-300 rounded-lg font-medium">
+                    <i class="fa-solid fa-certificate text-teal-500 mr-1"></i>${c}
+                </span>
+            `).join('');
+        }
+
+        function renderSpecialistAvailableJobs() {
+            const container = document.getElementById('specialistJobsList');
+            if (!container) return;
+
+            const currentSpec = state.specialists.find(s => s.id === state.activeSpecialistId);
+
+            container.innerHTML = state.projects.map(p => {
+                const isAssignedToMe = p.assignedSpecialistId === currentSpec.id;
+                
+                return `
+                <div class="bg-slate-900 border ${isAssignedToMe ? 'border-teal-500/60 ring-1 ring-teal-500/30' : 'border-slate-800'} rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                        <div>
+                            <span class="text-xs text-teal-400 font-semibold uppercase tracking-wider">${p.category}</span>
+                            <h4 class="font-bold text-white text-base">${p.clientName} - ${p.clientLocation}</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">Payout (85%)</span>
+                            <span class="text-base font-extrabold text-teal-400">$${(p.budget * 0.85).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-300">${p.scope}</p>
+
+                    <div class="flex items-center justify-between pt-2 text-xs">
+                        <div class="flex items-center space-x-2">
+                            ${getStatusBadgeHTML(p.status)}
+                            ${getEscrowBadgeHTML(p.escrowStatus)}
+                        </div>
+
+                        <div>
+                            ${p.status === 'In Escrow & Execution' && isAssignedToMe ? `
+                                <button onclick="markJobDelivered('${p.id}')" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition text-xs">
+                                    <i class="fa-solid fa-paper-plane mr-1"></i> Submit Work for QA
+                                </button>
+                            ` : ''}
+
+                            ${p.status === 'Awaiting Match' ? `
+                                <button onclick="applyForJob('${p.id}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-400 border border-teal-500/30 font-semibold rounded-xl transition text-xs">
+                                    <i class="fa-solid fa-hand-pointer mr-1"></i> Express Merit Interest
+                                </button>
+                            ` : ''}
+
+                            ${isAssignedToMe && p.status === 'Awaiting Client Approval' ? `
+                                <span class="text-cyan-400 font-semibold"><i class="fa-solid fa-clock mr-1"></i> Submitted - Pending Client Approval</span>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function markJobDelivered(projectId) {
+            const prj = state.projects.find(p => p.id === projectId);
+            if (prj) {
+                prj.status = 'Awaiting Client Approval';
+                saveState();
+                alert(`Work for ${projectId} submitted to Reymass QA and Client for final approval.`);
+            }
+        }
+
+        function applyForJob(projectId) {
+            const currentSpec = state.specialists.find(s => s.id === state.activeSpecialistId);
+            alert(`Interest expressed! Reymass Admin will review your merits (${currentSpec.certifications.join(', ')}) and assign you to the client.`);
+        }
+
+        function openAddMeritModal() {
+            document.getElementById('meritModal').classList.remove('hidden');
+        }
+
+        function handleSaveMerit(e) {
+            e.preventDefault();
+            const title = document.getElementById('meritTitle').value;
+            const spec = state.specialists.find(s => s.id === state.activeSpecialistId);
+            if (spec) {
+                spec.certifications.push(title);
+                saveState();
+                closeModal('meritModal');
+                document.getElementById('meritTitle').value = '';
+                document.getElementById('meritUrl').value = '';
+            }
+        }
+
+        // =========================================
+        // REYMASS ADMIN DASHBOARD & ESCROW CENTER
+        // =========================================
+        function renderAdminDashboard() {
+            const container = document.getElementById('adminProjectsList');
+            if (!container) return;
+
+            // Compute Escrow Totals
+            let totalEscrow = 0;
+            let agencyFees = 0;
+
+            state.projects.forEach(p => {
+                if (p.escrowStatus === 'Held in Escrow' || p.escrowStatus === 'Released') {
+                    totalEscrow += p.budget;
+                    agencyFees += p.budget * 0.15;
+                }
+            });
+
+            document.getElementById('admin-escrow-total').textContent = `$${totalEscrow.toLocaleString()}`;
+            document.getElementById('admin-agency-fees').textContent = `$${agencyFees.toLocaleString()}`;
+
+            container.innerHTML = state.projects.map(p => {
+                const assignedSpec = state.specialists.find(s => s.id === p.assignedSpecialistId);
+
+                return `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-extrabold text-white text-lg">${p.id}</span>
+                                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md">${p.clientName}</span>
+                                <span class="text-xs text-rose-400 font-semibold"><i class="fa-solid fa-location-dot mr-1"></i>${p.clientLocation}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1">Scope: ${p.scope}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${getStatusBadgeHTML(p.status)}
+                            ${getEscrowBadgeHTML(p.escrowStatus)}
+                        </div>
+                    </div>
+
+                    <!-- Escrow Financial Breakdown Bar -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-xs">
+                        <div>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Client Escrow Deposit</span>
+                            <span class="text-sm font-extrabold text-teal-400">$${p.budget.toLocaleString()}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Specialist Net Payout (85%)</span>
+                            <span class="text-sm font-extrabold text-emerald-400">$${(p.budget * 0.85).toLocaleString()}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Reymass Agency Commission (15%)</span>
+                            <span class="text-sm font-extrabold text-purple-400">$${(p.budget * 0.15).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Controls for Admin -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <!-- Specialist Selector for Matching -->
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-400 font-semibold">Match Specialist:</span>
+                            <select onchange="assignSpecialistToProject('${p.id}', this.value)" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-teal-300 focus:outline-none">
+                                <option value="">-- Choose Vetted Expert --</option>
+                                ${state.specialists.map(s => `
+                                    <option value="${s.id}" ${p.assignedSpecialistId === s.id ? 'selected' : ''}>
+                                        ${s.name} (${s.domain}) - ${s.location}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+
+                        <!-- Escrow Operations -->
+                        <div class="flex items-center space-x-2">
+                            ${p.escrowStatus === 'Pending Deposit' ? `
+                                <button onclick="simulateEscrowDeposit('${p.id}')" class="px-3 py-1.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs rounded-xl transition">
+                                    <i class="fa-solid fa-vault mr-1"></i> Secure Client Escrow Deposit
+                                </button>
+                            ` : ''}
+
+                            ${p.status === 'Awaiting Client Approval' ? `
+                                <button onclick="approveClientProject('${p.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition">
+                                    <i class="fa-solid fa-check-double mr-1"></i> Override & Release Payout
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function assignSpecialistToProject(projectId, specialistId) {
+            const prj = state.projects.find(p => p.id === projectId);
+            if (prj) {
+                prj.assignedSpecialistId = specialistId || null;
+                if (specialistId && prj.status === 'Awaiting Match') {
+                    prj.status = 'In Escrow & Execution';
+                    prj.escrowStatus = 'Held in Escrow';
+                }
+                saveState();
+            }
+        }
+
+        function simulateEscrowDeposit(projectId) {
+            const prj = state.projects.find(p => p.id === projectId);
+            if (prj) {
+                prj.escrowStatus = 'Held in Escrow';
+                if (prj.assignedSpecialistId) {
+                    prj.status = 'In Escrow & Execution';
+                }
+                saveState();
+                alert(`$${prj.budget} successfully locked in Reymass Escrow Vault for Project ${projectId}.`);
+            }
+        }
+
+        // UTILITY BADGE HELPERS
+        function getStatusBadgeHTML(status) {
+            switch(status) {
+                case 'Awaiting Match':
+                    return `<span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-hourglass-start mr-1"></i>Awaiting Match</span>`;
+                case 'In Escrow & Execution':
+                    return `<span class="px-2.5 py-1 bg-teal-500/10 border border-teal-500/30 text-teal-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-gear fa-spin mr-1"></i>In Progress</span>`;
+                case 'Awaiting Client Approval':
+                    return `<span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-eye mr-1"></i>QA / Approval</span>`;
+                case 'Completed':
+                    return `<span class="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-check-circle mr-1"></i>Completed</span>`;
+                default:
+                    return `<span class="px-2.5 py-1 bg-slate-800 text-slate-300 text-[11px] font-bold rounded-full">${status}</span>`;
+            }
+        }
+
+        function getEscrowBadgeHTML(escrowStatus) {
+            switch(escrowStatus) {
+                case 'Pending Deposit':
+                    return `<span class="px-2.5 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-circle-exclamation mr-1"></i>Deposit Pending</span>`;
+                case 'Held in Escrow':
+                    return `<span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-lock mr-1"></i>Escrow Secured</span>`;
+                case 'Released':
+                    return `<span class="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold rounded-full"><i class="fa-solid fa-money-bill-transfer mr-1"></i>Funds Released</span>`;
+                default:
+                    return `<span class="px-2.5 py-1 bg-slate-800 text-slate-300 text-[11px] font-bold rounded-full">${escrowStatus}</span>`;
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function openSimulationModal() {
+            document.getElementById('simModal').classList.remove('hidden');
+        }
+
+        // INITIALIZE APP ON LOAD
+        window.onload = function() {
+            renderAllViews();
+        };
+    </script>
+</body>
+</html>
