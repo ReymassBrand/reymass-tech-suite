@@ -182,4 +182,5 @@ app.post('/api/mpesa/callback', (req, res) => {
     } else {
         alert('Failed to trigger M-Pesa payment. Check phone number format.');
     }
-}const MPESA_CALLBACK_URL = 'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
+}// INCORRECT (Duplicate declaration):
+const MPESA_CALLBACK_URL = 'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
