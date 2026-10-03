@@ -1,0 +1,145 @@
+/* --- BRAND THEME VARIABLES --- */
+:root {
+  --primary-color: #0056b3;
+  --primary-hover: #004085;
+  --secondary-color: #17a2b8;
+  --accent-color: #28a745;
+  --bg-light: #f8f9fa;
+  --text-dark: #212529;
+}
+
+body {
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* NAVBAR & HEADER */
+.navbar {
+  background-color: var(--primary-color);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.brand-title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+}
+
+/* NAVIGATION BUTTONS */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-mpesa {
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* LAYOUT & CARDS */
+.container {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* PRINTABLE DOCUMENTS */
+.printable-document {
+  background: #ffffff;
+  padding: 30px;
+  max-width: 800px;
+  margin: 20px auto;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.doc-table th, .doc-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.doc-table th {
+  background-color: #f4f6f9;
+}
+
+/* MEDIA PRINT ENGINE */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-document, .printable-document * {
+    visibility: visible;
+  }
+  .printable-document {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
