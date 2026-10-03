@@ -3,100 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reymass Brand ERP Portal</title>
-  <link rel="stylesheet" href="/css/print.css">
-  <script src="/app.js" defer></script>
+  <title>REYMASS BRAND | Official Corporate Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: #f4f6f9; color: #333; line-height: 1.6; }
+    
+    header { background: #111827; color: #fff; padding: 2rem 1rem; text-align: center; }
+    header h1 { font-size: 2.2rem; letter-spacing: 1px; color: #3b82f6; }
+    header p { color: #9ca3af; margin-top: 0.5rem; }
+
+    .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+
+    /* Subsidiary Navigation Tabs */
+    .tabs { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+    .tab-btn {
+      flex: 1; padding: 1rem; background: #e5e7eb; border: none; font-weight: bold;
+      font-size: 1rem; cursor: pointer; border-radius: 8px; transition: all 0.3s;
+    }
+    .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 6px rgba(37,99,235,0.2); }
+
+    /* Service Cards */
+    .subsidiary-content { display: none; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .subsidiary-content.active { display: block; }
+
+    .service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; background: #fafafa; }
+    .card h3 { color: #111827; margin-bottom: 0.5rem; }
+    .card p { color: #4b5563; font-size: 0.95rem; margin-bottom: 1rem; }
+    .price { font-weight: bold; color: #059669; font-size: 1.1rem; margin-bottom: 1rem; display: block; }
+
+    /* Payment Form */
+    .pay-btn {
+      width: 100%; padding: 0.75rem; background: #059669; color: white; border: none;
+      border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;
+    }
+    .pay-btn:hover { background: #047857; }
+
+    /* Modal / Form Overlay */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal.active { display: flex; }
+    .modal-box { background: white; padding: 2rem; border-radius: 10px; max-width: 400px; width: 100%; }
+    .modal-box h3 { margin-bottom: 1rem; color: #111827; }
+    .input-group { margin-bottom: 1rem; }
+    .input-group label { display: block; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.9rem; }
+    .input-group input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+    
+    .close-btn { background: #6b7280; margin-top: 0.5rem; }
+
+    #status-msg { margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none; font-weight: bold; text-align: center; }
+    .success { background: #d1fae5; color: #065f46; }
+    .error { background: #fee2e2; color: #991b1b; }
+  </style>
 </head>
 <body>
 
-  <!-- HEADER NAVBAR -->
-  <header class="navbar">
-    <div class="brand-container">
-      <img src="/logo.png" alt="Reymass Logo" class="brand-logo" onerror="this.style.display='none'">
-      <span class="brand-title">REYMASS BRAND</span>
-    </div>
-    <nav class="nav-links">
-      <button class="btn-primary" onclick="switchView('dashboard')">Dashboard</button>
-      <button class="btn-primary" onclick="switchView('tech-view')">IT & Tech</button>
-      <button class="btn-primary" onclick="switchView('agri-view')">Agribusiness</button>
-      <button class="btn-primary" onclick="switchView('consulting-view')">Consulting</button>
-      <button class="btn-primary" onclick="switchView('docs-view')">Accounting Docs</button>
-    </nav>
+  <header>
+    <h1>REYMASS BRAND</h1>
+    <p>IT & Tech Solutions | Agricultural Ventures | Agency & Consulting</p>
   </header>
 
-  <main class="container">
+  <div class="container">
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('tech')">Tech Solutions</button>
+      <button class="tab-btn" onclick="switchTab('agri')">Agricultural Ventures</button>
+      <button class="tab-btn" onclick="switchTab('agency')">Agency & Consulting</button>
+    </div>
 
-    <!-- VIEW 1: ESCROW & PROJECTS DASHBOARD -->
-    <section id="dashboard" class="view-section card">
-      <h2>Project Escrow Management</h2>
-      <p>Paybill Number: <strong>174379</strong></p>
+    <!-- REYMASS TECH SOLUTIONS -->
+    <div id="tech" class="subsidiary-content active">
+      <h2>REYMASS Tech Solutions</h2>
+      <p>Enterprise Software Development, M-Pesa Integrations, and Network Architecture.</p>
 
-      <form id="projectForm" onsubmit="handleProjectSubmit(event)" style="margin-bottom: 25px;">
-        <h3>Submit New Request</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <input type="text" id="clientName" placeholder="Client Name" required style="padding: 8px;">
-          <select id="categorySelect" style="padding: 8px;">
-            <option value="IT & Tech">IT & Tech Solutions</option>
-            <option value="Agricultural Ventures">Agricultural Ventures</option>
-            <option value="Agency & Consulting">Agency & Consulting Services</option>
-          </select>
-          <input type="number" id="budgetInput" placeholder="Budget (KES)" required style="padding: 8px;">
-          <input type="text" id="locationInput" placeholder="Location" required style="padding: 8px;">
+      <div class="service-grid">
+        <div class="card">
+          <h3>M-Pesa API Integration</h3>
+          <p>Automated STK Push, C2B Paybill, and B2C payout pipelines for web and mobile apps.</p>
+          <span class="price">KES 15,000</span>
+          <button class="pay-btn" onclick="openPayModal('TECH', 15000, 'M-Pesa API Integration')">Order Service</button>
         </div>
-        <textarea id="descriptionInput" placeholder="Project Description" style="width: 100%; margin-top: 10px; padding: 8px;"></textarea>
-        <button type="submit" class="btn-primary" style="margin-top: 10px;">Submit Project</button>
-      </form>
+        <div class="card">
+          <h3>Custom Web System</h3>
+          <p>Node.js & React enterprise web app with automated billing, dashboards, and database logging.</p>
+          <span class="price">KES 35,000</span>
+          <button class="pay-btn" onclick="openPayModal('TECH', 35000, 'Custom Web System')">Order Service</button>
+        </div>
+      </div>
+    </div>
 
-      <table class="doc-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Client</th>
-            <th>Category</th>
-            <th>Budget</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="projectsTableBody">
-          <!-- Dynamically populated by app.js -->
-        </tbody>
-      </table>
-    </section>
+    <!-- REYMASS AGRICULTURAL VENTURES -->
+    <div id="agri" class="subsidiary-content">
+      <h2>REYMASS Agricultural Ventures</h2>
+      <p>Smart Farming, IoT Utility Metering, and Agribusiness Consulting.</p>
 
-    <!-- VIEW 2: IT & TECH DIVISION -->
-    <section id="tech-view" class="view-section card" style="display: none;">
-      <h2>Reymass IT & Tech Solutions</h2>
-      <p>Custom Software Development, API Integration, and Managed Cloud Infrastructure.</p>
-    </section>
+      <div class="service-grid">
+        <div class="card">
+          <h3>Smart Water Meter System</h3>
+          <p>IoT-enabled smart water meter setup with automated usage telemetry for commercial farms.</p>
+          <span class="price">KES 12,500</span>
+          <button class="pay-btn" onclick="openPayModal('AGRI', 12500, 'Smart Water Meter Setup')">Order Service</button>
+        </div>
+        <div class="card">
+          <h3>Agribusiness Farm Audit</h3>
+          <p>Comprehensive soil, drip irrigation, and crop yield optimization consultancy.</p>
+          <span class="price">KES 8,000</span>
+          <button class="pay-btn" onclick="openPayModal('AGRI', 8000, 'Agribusiness Farm Audit')">Order Service</button>
+        </div>
+      </div>
+    </div>
 
-    <!-- VIEW 3: AGRIBUSINESS DIVISION -->
-    <section id="agri-view" class="view-section card" style="display: none;">
-      <h2>Reymass Agribusiness Ventures</h2>
-      <p>Smart Irrigation Systems, Water Metering Solutions, and Farm Supply Chain Logistics.</p>
-    </section>
+    <!-- REYMASS AGENCY & CONSULTING -->
+    <div id="agency" class="subsidiary-content">
+      <h2>REYMASS Agency & Consulting</h2>
+      <p>AI Commercial Ads, Digital Marketing, and Strategic Brand Infrastructure.</p>
 
-    <!-- VIEW 4: CONSULTING DIVISION -->
-    <section id="consulting-view" class="view-section card" style="display: none;">
-      <h2>Reymass Agency & Consulting</h2>
-      <p>Corporate Branding, Business Advisory, Strategy, and Media Campaigns.</p>
-    </section>
+      <div class="service-grid">
+        <div class="card">
+          <h3>30-Sec AI Video Ad Package</h3>
+          <p>High-converting commercial video advertisement produced using AI tools like Banana AI.</p>
+          <span class="price">KES 5,000</span>
+          <button class="pay-btn" onclick="openPayModal('AGENCY', 5000, 'AI Video Ad Commercial')">Order Service</button>
+        </div>
+        <div class="card">
+          <h3>Brand Strategy & Identity</h3>
+          <p>Complete corporate identity design including pitch deck, logo design, and brand kit.</p>
+          <span class="price">KES 10,000</span>
+          <button class="pay-btn" onclick="openPayModal('AGENCY', 10000, 'Brand Identity Setup')">Order Service</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <!-- VIEW 5: PRINTABLE ACCOUNTING DOCUMENTS -->
-    <section id="docs-view" class="view-section card" style="display: none;">
-      <h2>Accounting & Document Center</h2>
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;" class="no-print">
-        <button class="btn-primary" onclick="loadSampleInvoice()">Generate Sample Invoice</button>
-        <button class="btn-primary" onclick="loadSampleDeliveryNote()">Generate Delivery Note</button>
-        <button class="btn-primary" onclick="loadSampleVoucher()">Generate Petty Cash Voucher</button>
+  <!-- Payment Modal -->
+  <div id="payModal" class="modal">
+    <div class="modal-box">
+      <h3 id="modalTitle">Pay via M-Pesa</h3>
+      <p id="modalSub" style="margin-bottom: 1rem; color: #6b7280; font-size: 0.9rem;"></p>
+      
+      <div class="input-group">
+        <label>M-Pesa Phone Number</label>
+        <input type="text" id="phoneInput" placeholder="0700000000">
       </div>
 
-      <div id="documentViewer">
-        <p style="text-align: center; color: #777;">Select a document type above to render a printable preview.</p>
-      </div>
-    </section>
+      <button class="pay-btn" onclick="initiatePayment()">Send STK Push Prompt</button>
+      <button class="pay-btn close-btn" onclick="closeModal()">Cancel</button>
 
-  </main>
+      <div id="status-msg"></div>
+    </div>
+  </div>
 
+  <script>
+    let currentSubsidiary = 'TECH';
+    let currentAmount = 0;
+    let currentItem = '';
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.subsidiary-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function openPayModal(subsidiary, amount, item) {
+      currentSubsidiary = subsidiary;
+      currentAmount = amount;
+      currentItem = item;
+
+      document.getElementById('modalTitle').innerText = `Pay KES ${amount.toLocaleString()} via M-Pesa`;
+      document.getElementById('modalSub').innerText = `Service: ${item} (${subsidiary})`;
+      document.getElementById('payModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('payModal').classList.remove('active');
+      document.getElementById('status-msg').style.display = 'none';
+    }
+
+    async function initiatePayment() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const statusBox = document.getElementById('status-msg');
+
+      if (!phone) {
+        statusBox.innerText = 'Please enter a valid phone number.';
+        statusBox.className = 'error';
+        statusBox.style.display = 'block';
+        return;
+      }
+
+      statusBox.innerText = 'Initializing STK Push... Check your phone.';
+      statusBox.className = 'success';
+      statusBox.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/mpesa/stkpush', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: phone,
+            amount: currentAmount,
+            invoiceId: Math.floor(100 + Math.random() * 900),
+            subsidiaryCode: currentSubsidiary
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          statusBox.innerText = 'STK Push sent successfully! Enter M-Pesa PIN on your phone.';
+        } else {
+          statusBox.innerText = 'Error: ' + (data.error || 'STK Push failed');
+          statusBox.className = 'error';
+        }
+      } catch (err) {
+        statusBox.innerText = 'Network error during request.';
+        statusBox.className = 'error';
+      }
+    }
+  </script>
 </body>
 </html>
