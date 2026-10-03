@@ -175,18 +175,24 @@ app.post('/api/projects', (req, res) => {
 
 // M-Pesa Authentication Token Helper
 async function getMpesaToken() {
-  const consumerKey = process.env.MPESA_CONSUMER_KEY || 'SandboxKey';
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'SandboxSecret';
+  // Use environment variable names, fallback to raw sandbox keys if env vars are missing
+  const consumerKey = process.env.MPESA_CONSUMER_KEY || 'obwk59KLi8Yj6amsXHPey8nhIia7DCq8GoOdqgkUsRbIdShM';
+  const consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'sGAMoExEenhibAEVvxaJYShmQGAJ3PHaVul63tqOlHUiYPLtUe4LAPpi51SXbgAv';
+  
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
   try {
     const response = await axios.get(
       'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-      { headers: { Authorization: `Basic ${auth}` } }
+      {
+        headers: {
+          Authorization: `Basic ${auth}`
+        }
+      }
     );
     return response.data.access_token;
   } catch (error) {
-    console.error('Failed to obtain M-Pesa token:', error.message);
+    console.error('Failed to obtain M-Pesa token:', error.response ? error.response.data : error.message);
     throw error;
   }
 }
