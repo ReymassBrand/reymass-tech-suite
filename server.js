@@ -1,342 +1,170 @@
-// ============================================
-// M-PESA CONFIGURATION
-// ============================================
+require('dotenv').config();
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const axios = require('axios');
+const cors = require('cors');
+const path = require('path');
 
-const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '174379';
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-const MPESA_PASSKEY =
-  process.env.MPESA_PASSKEY ||
-  'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const MPESA_CALLBACK_URL =
-  process.env.MPESA_CALLBACK_URL ||
-  'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
+// Initialize Database
+const db = new sqlite3.Database('./reymass_brand.db', (err) => {
+  if (err) console.error('Database connection error:', err.message);
+  else console.log('Connected to REYMASS Brand Database.');
+});
 
+// Create Transactions Table
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      checkout_request_id TEXT UNIQUE,
+      merchant_request_id TEXT,
+      phone_number TEXT NOT NULL,
+      amount REAL NOT NULL,
+      account_reference TEXT NOT NULL,
+      subsidiary_code TEXT NOT NULL,
+      status TEXT DEFAULT 'PENDING',
+      mpesa_receipt_number TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+});
 
-// ============================================
-// GET M-PESA ACCESS TOKEN
-// ============================================
-
+// M-Pesa OAuth Helper
 async function getMpesaToken() {
-
-  const consumerKey = process.env.MPESA_CONSUMER_KEY;
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-
-  if (!consumerKey || !consumerSecret) {
-    throw new Error(
-      'M-Pesa Consumer Key or Consumer Secret is missing from .env'
-    );
-  }
-
-  const auth = Buffer
-    .from(`${consumerKey}:${consumerSecret}`)
-    .toString('base64');
+  const consumerKey = (process.env.MPESA_CONSUMER_KEY || 'c3RFOGp4WUpwU09hQU5kUG1LTVU6YWFiQU5G').trim();
+  const consumerSecret = (process.env.MPESA_CONSUMER_SECRET || 'SandboxSecret').trim();
+  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
   try {
-
     const response = await axios.get(
       'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-      {
-        headers: {
-          Authorization: `Basic ${auth}`
-        }
-      }
+      { headers: { Authorization: `Basic ${auth}` } }
     );
-
-    console.log('M-Pesa OAuth Token Generated Successfully');
-
-    if (!response.data || !response.data.access_token) {
-      throw new Error('No access token returned by Safaricom');
-    }
-
     return response.data.access_token;
-
   } catch (error) {
-
-    console.error(
-      'M-Pesa OAuth Error:',
-      error.response?.data || error.message
-    );
-
-    throw error;
+    console.error('M-Pesa Token Error:', error.response ? error.response.data : error.message);
+    throw new Error('Failed to acquire M-Pesa access token');
   }
 }
 
+// Health Route
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'Online', brand: 'REYMASS BRAND', timestamp: new Date() });
+});
 
-// ============================================
-// KENYA TIMESTAMP
-// Format: YYYYMMDDHHmmss
-// ============================================
-
-function getMpesaTimestamp() {
-
-  const now = new Date();
-
-  const formatter = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Africa/Nairobi',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23'
-  });
-
-  const parts = formatter.formatToParts(now);
-
-  const values = {};
-
-  parts.forEach(part => {
-    if (part.type !== 'literal') {
-      values[part.type] = part.value;
-    }
-  });
-
-  return (
-    values.year +
-    values.month +
-    values.day +
-    values.hour +
-    values.minute +
-    values.second
-  );
-}
-
-
-// ============================================
-// FORMAT KENYAN PHONE NUMBER
-// ============================================
-
-function formatKenyanPhone(phone) {
-
-  if (!phone) {
-    throw new Error('Phone number is required');
-  }
-
-  let number = String(phone)
-    .trim()
-    .replace(/\s+/g, '')
-    .replace(/-/g, '');
-
-  // 0712345678 -> 254712345678
-  if (/^0\d{9}$/.test(number)) {
-    number = '254' + number.substring(1);
-  }
-
-  // 712345678 -> 254712345678
-  else if (/^7\d{8}$/.test(number)) {
-    number = '254' + number;
-  }
-
-  // +254712345678 -> 254712345678
-  else if (/^\+2547\d{8}$/.test(number)) {
-    number = number.substring(1);
-  }
-
-  // Already 254712345678
-  else if (/^2547\d{8}$/.test(number)) {
-    // Do nothing
-  }
-
-  else {
-    throw new Error(
-      'Invalid Kenyan phone number. Use 0712345678 or 254712345678.'
-    );
-  }
-
-  return number;
-}
-
-
-// ============================================
-// STK PUSH
-// ============================================
-
-app.post('/api/mpesa/stkpush-unified', async (req, res) => {
-
+// Multi-Subsidiary STK Push
+app.post('/api/mpesa/stkpush', async (req, res) => {
   try {
+    const { phoneNumber, amount, invoiceId, subsidiaryCode } = req.body;
 
-    const {
-      phoneNumber,
-      amount,
-      invoiceId,
-      subsidiaryCode
-    } = req.body;
-
-
-    // -------------------------------
-    // Validate amount
-    // -------------------------------
-
-    const numericAmount = Number(amount);
-
-    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid payment amount'
-      });
+    if (!phoneNumber || !amount) {
+      return res.status(400).json({ success: false, error: 'Phone number and amount are required.' });
     }
 
-    const finalAmount = Math.round(numericAmount);
+    let formattedPhone = phoneNumber.toString().trim().replace(/^(0|\+?254)/, '254');
+    if (!formattedPhone.startsWith('254')) formattedPhone = `254${formattedPhone}`;
 
+    const shortCode = process.env.MPESA_SHORTCODE || '174379';
+    const passkey = process.env.MPESA_PASSKEY || 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+    
+    const date = new Date();
+    const timestamp = 
+      date.getFullYear().toString() +
+      String(date.getMonth() + 1).padStart(2, '0') +
+      String(date.getDate()).padStart(2, '0') +
+      String(date.getHours()).padStart(2, '0') +
+      String(date.getMinutes()).padStart(2, '0') +
+      String(date.getSeconds()).padStart(2, '0');
 
-    // -------------------------------
-    // Format phone
-    // -------------------------------
-
-    const formattedPhone = formatKenyanPhone(phoneNumber);
-
-
-    // -------------------------------
-    // Generate timestamp
-    // -------------------------------
-
-    const timestamp = getMpesaTimestamp();
-
-
-    // -------------------------------
-    // Generate password
-    // -------------------------------
-
-    const password = Buffer
-      .from(
-        `${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`
-      )
-      .toString('base64');
-
-
-    // -------------------------------
-    // Account reference
-    // -------------------------------
-
-    const accountReference =
-      `${(subsidiaryCode || 'TECH').toUpperCase()}-INV-${invoiceId || '001'}`;
-
-
-    // -------------------------------
-    // STK Payload
-    // -------------------------------
-
-    const payload = {
-
-      BusinessShortCode: MPESA_SHORTCODE,
-
-      Password: password,
-
-      Timestamp: timestamp,
-
-      TransactionType: 'CustomerPayBillOnline',
-
-      Amount: finalAmount,
-
-      PartyA: formattedPhone,
-
-      PartyB: MPESA_SHORTCODE,
-
-      PhoneNumber: formattedPhone,
-
-      CallBackURL: MPESA_CALLBACK_URL,
-
-      AccountReference: accountReference,
-
-      TransactionDesc:
-        `Reymass ${subsidiaryCode || 'TECH'} Payment`
-    };
-
-
-    console.log('--------------------------------');
-    console.log('M-PESA STK PUSH');
-    console.log('Phone:', formattedPhone);
-    console.log('Amount:', finalAmount);
-    console.log('Timestamp:', timestamp);
-    console.log('Account:', accountReference);
-    console.log('Callback:', MPESA_CALLBACK_URL);
-    console.log('--------------------------------');
-
-
-    // -------------------------------
-    // Get OAuth Token
-    // -------------------------------
+    const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
+    const code = (subsidiaryCode || 'TECH').toUpperCase();
+    const accountReference = `${code}-INV-${invoiceId || '001'}`;
 
     const token = await getMpesaToken();
 
-
-    // -------------------------------
-    // Send STK Push
-    // -------------------------------
+    const payload = {
+      BusinessShortCode: shortCode,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: 'CustomerPayBillOnline',
+      Amount: Math.round(Number(amount)),
+      PartyA: formattedPhone,
+      PartyB: shortCode,
+      PhoneNumber: formattedPhone,
+      CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://reymass-tech-suite.onrender.com/api/mpesa/callback',
+      AccountReference: accountReference,
+      TransactionDesc: `REYMASS ${code} Payment`
+    };
 
     const response = await axios.post(
       'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-
       payload,
-
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
+    const { CheckoutRequestID, MerchantRequestID } = response.data;
 
-    console.log(
-      'STK Push Response:',
-      JSON.stringify(response.data, null, 2)
+    db.run(
+      `INSERT INTO transactions (checkout_request_id, merchant_request_id, phone_number, amount, account_reference, subsidiary_code, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [CheckoutRequestID, MerchantRequestID, formattedPhone, amount, accountReference, code, 'PENDING']
     );
 
-
-    return res.json({
-
+    res.json({
       success: true,
-
-      data: response.data,
-
+      message: 'STK Push initialized',
+      checkoutRequestId: CheckoutRequestID,
       accountReference
-
     });
-
 
   } catch (error) {
-
-    console.error(
-      'STK Push Error:',
-      error.response?.data || error.message
-    );
-
-
-    return res.status(500).json({
-
-      success: false,
-
-      error: error.response?.data || error.message
-
-    });
-
+    const errDetails = error.response ? error.response.data : error.message;
+    console.error('STK Push Error:', errDetails);
+    res.status(500).json({ success: false, error: errDetails });
   }
-
 });
 
-
-// ============================================
-// M-PESA CALLBACK
-// ============================================
-
+// M-Pesa Callback Webhook
 app.post('/api/mpesa/callback', (req, res) => {
+  try {
+    const callbackData = req.body.Body.stkCallback;
+    const checkoutRequestId = callbackData.CheckoutRequestID;
 
-  console.log('================================');
-  console.log('M-PESA CALLBACK RECEIVED');
-  console.log('================================');
+    if (callbackData.ResultCode === 0) {
+      let mpesaReceiptNumber = '';
+      callbackData.CallbackMetadata.Item.forEach(item => {
+        if (item.Name === 'MpesaReceiptNumber') mpesaReceiptNumber = item.Value;
+      });
 
-  console.log(
-    JSON.stringify(req.body, null, 2)
-  );
+      db.run(
+        `UPDATE transactions SET status = 'COMPLETED', mpesa_receipt_number = ? WHERE checkout_request_id = ?`,
+        [mpesaReceiptNumber, checkoutRequestId]
+      );
+    } else {
+      db.run(`UPDATE transactions SET status = 'FAILED' WHERE checkout_request_id = ?`, [checkoutRequestId]);
+    }
+    res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+  } catch (err) {
+    res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+  }
+});
 
-
-  // Always acknowledge Safaricom
-  res.json({
-    ResultCode: 0,
-    ResultDesc: 'Accepted'
+// Fetch Transactions
+app.get('/api/transactions', (req, res) => {
+  db.all(`SELECT * FROM transactions ORDER BY created_at DESC`, [], (err, rows) => {
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, count: rows.length, data: rows });
   });
+});
 
+app.listen(PORT, () => {
+  console.log(`REYMASS Brand Server Running on Port ${PORT}`);
 });
