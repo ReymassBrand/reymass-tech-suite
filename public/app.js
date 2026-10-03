@@ -1,10 +1,12 @@
-// Explicitly expose switchView to the window object for inline onclick attributes
-window.switchView = function(viewId) {
-  const views = document.querySelectorAll('.view-section');
-  views.forEach(view => view.style.display = 'none');
+window.switchView = function (viewName) {
+  document.querySelectorAll('[id^="view-"]').forEach(view => {
+    view.classList.add('hidden');
+  });
 
-  const targetView = document.getElementById(viewId);
+  const targetView = document.getElementById(`view-${viewName}`);
   if (targetView) {
-    targetView.style.display = 'block';
+    targetView.classList.remove('hidden');
+  } else {
+    console.error(`View not found: view-${viewName}`);
   }
 };
