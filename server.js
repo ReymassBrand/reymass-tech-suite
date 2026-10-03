@@ -1,307 +1,276 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const axios = require('axios');
-require('dotenv').config();
+// ============================================
+// M-PESA CONFIGURATION
+// ============================================
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || '174379';
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+const MPESA_PASSKEY =
+  process.env.MPESA_PASSKEY ||
+  'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
 
-// Database Setup
-const db = new sqlite3.Database('./reymass.db', (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-  } else {
-    console.log('Connected to SQLite database: reymass.db');
-  }
-});
+const MPESA_CALLBACK_URL =
+  process.env.MPESA_CALLBACK_URL ||
+  'https://reymass-tech-suite.onrender.com/api/mpesa/callback';
 
-// Initialize Relational Schema
-db.serialize(() => {
-  // 1. Projects & Escrow Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS projects (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      client_name TEXT NOT NULL,
-      category TEXT NOT NULL,
-      budget REAL NOT NULL,
-      location TEXT NOT NULL,
-      description TEXT NOT NULL,
-      status TEXT DEFAULT 'Pending Escrow',
-      assigned_specialist TEXT DEFAULT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
 
-  // 2. Subsidiaries Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS subsidiaries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      code TEXT UNIQUE NOT NULL,
-      name TEXT NOT NULL,
-      tax_pin TEXT DEFAULT 'P000000000X',
-      contact_email TEXT NOT NULL
-    )
-  `);
+// ============================================
+// GET M-PESA ACCESS TOKEN
+// ============================================
 
-  // Seed default subsidiaries if empty
-  db.get('SELECT COUNT(*) as count FROM subsidiaries', (err, row) => {
-    if (row && row.count === 0) {
-      db.run(`INSERT INTO subsidiaries (code, name, contact_email) VALUES 
-        ('TECH', 'Reymass IT & Tech Solutions', 'tech@reymass.com'),
-        ('AGRI', 'Reymass Agribusiness Ventures', 'agri@reymass.com'),
-        ('CONSULT', 'Reymass Agency & Consulting', 'consulting@reymass.com')
-      `);
-    }
-  });
-
-  // 3. Multi-Subsidiary Inventory
-  db.run(`
-    CREATE TABLE IF NOT EXISTS inventory (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      subsidiary_code TEXT NOT NULL,
-      item_code TEXT UNIQUE NOT NULL,
-      name TEXT NOT NULL,
-      unit_of_measure TEXT NOT NULL,
-      quantity_in_stock REAL DEFAULT 0,
-      unit_price REAL NOT NULL,
-      reorder_level REAL DEFAULT 5,
-      FOREIGN KEY(subsidiary_code) REFERENCES subsidiaries(code)
-    )
-  `);
-
-  // 4. Invoices & Billing
-  db.run(`
-    CREATE TABLE IF NOT EXISTS invoices (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      invoice_number TEXT UNIQUE NOT NULL,
-      subsidiary_code TEXT NOT NULL,
-      client_name TEXT NOT NULL,
-      client_email TEXT,
-      client_phone TEXT NOT NULL,
-      subtotal REAL NOT NULL,
-      tax_amount REAL DEFAULT 0,
-      total_amount REAL NOT NULL,
-      status TEXT DEFAULT 'Unpaid',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 5. Invoice Line Items
-  db.run(`
-    CREATE TABLE IF NOT EXISTS invoice_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      invoice_id INTEGER NOT NULL,
-      item_description TEXT NOT NULL,
-      quantity REAL NOT NULL,
-      unit_price REAL NOT NULL,
-      line_total REAL NOT NULL,
-      FOREIGN KEY(invoice_id) REFERENCES invoices(id)
-    )
-  `);
-
-  // 6. Delivery Notes
-  db.run(`
-    CREATE TABLE IF NOT EXISTS delivery_notes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      delivery_number TEXT UNIQUE NOT NULL,
-      invoice_id INTEGER NOT NULL,
-      subsidiary_code TEXT NOT NULL,
-      dispatch_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      recipient_name TEXT NOT NULL,
-      destination TEXT NOT NULL,
-      delivered_by TEXT NOT NULL,
-      status TEXT DEFAULT 'Dispatched',
-      FOREIGN KEY(invoice_id) REFERENCES invoices(id)
-    )
-  `);
-
-  // 7. Petty Cash Register
-  db.run(`
-    CREATE TABLE IF NOT EXISTS petty_cash (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      voucher_number TEXT UNIQUE NOT NULL,
-      subsidiary_code TEXT NOT NULL,
-      requested_by TEXT NOT NULL,
-      approved_by TEXT NOT NULL,
-      amount REAL NOT NULL,
-      category TEXT NOT NULL,
-      description TEXT NOT NULL,
-      disbursement_date DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // 8. Unified Receipts
-  db.run(`
-    CREATE TABLE IF NOT EXISTS receipts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      receipt_number TEXT UNIQUE NOT NULL,
-      invoice_id INTEGER NOT NULL,
-      mpesa_code TEXT NOT NULL,
-      amount_paid REAL NOT NULL,
-      payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(invoice_id) REFERENCES invoices(id)
-    )
-  `);
-});
-
-// --- API ROUTES ---
-
-// Projects API
-app.get('/api/projects', (req, res) => {
-  db.all('SELECT * FROM projects ORDER BY created_at DESC', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-app.post('/api/projects', (req, res) => {
-  const { client_name, category, budget, location, description } = req.body;
-  if (!client_name || !category || !budget || !location) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  const query = `INSERT INTO projects (client_name, category, budget, location, description) VALUES (?, ?, ?, ?, ?)`;
-  db.run(query, [client_name, category, budget, location, description || ''], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: this.lastID, status: 'Pending Escrow' });
-  });
-});
-
-// Reliable Sandbox Token Helper
 async function getMpesaToken() {
-  // Official Safaricom Sandbox Default App Credentials
-  // (Guaranteed to work with Shortcode 174379 and Default Passkey)
-  const consumerKey = (process.env.MPESA_CONSUMER_KEY || 'c3RFOGp4WUpwU09hQU5kUG1LTVU6YWFiQU5G').trim();
-  const consumerSecret = (process.env.MPESA_CONSUMER_SECRET || 'SandboxSecret').trim();
-  
-  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
-  try {
-    const response = await axios({
-      method: 'get',
-      url: 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-      headers: {
-        'Authorization': `Basic ${auth}`
-      }
-    });
+  const consumerKey = process.env.MPESA_CONSUMER_KEY;
+  const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
 
-    console.log('--- OAuth Response Debug ---', response.data);
-
-    if (!response.data || !response.data.access_token) {
-      throw new Error('No access_token field in Safaricom response');
-    }
-
-    return response.data.access_token;
-  } catch (error) {
-    console.error('M-Pesa Token Error:', error.response ? error.response.data : error.message);
-    throw error;
+  if (!consumerKey || !consumerSecret) {
+    throw new Error(
+      'M-Pesa Consumer Key or Consumer Secret is missing from .env'
+    );
   }
-}
 
-// Unified M-Pesa STK Push Endpoint
-app.post('/api/mpesa/stkpush-unified', async (req, res) => {
+  const auth = Buffer
+    .from(`${consumerKey}:${consumerSecret}`)
+    .toString('base64');
+
   try {
-    const { phoneNumber, amount, invoiceId, subsidiaryCode } = req.body;
-    
-    // Format phone number to 254XXXXXXXXX
-    let formattedPhone = phoneNumber.toString().trim().replace(/^(0|\+?254)/, '254');
-    if (!formattedPhone.startsWith('254')) {
-      formattedPhone = `254${formattedPhone}`;
-    }
 
-    // Default Sandbox Paybill Settings
-    const shortCode = '174379';
-    const passkey = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
-    
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
-    const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
-
-    const accountReference = `${(subsidiaryCode || 'TECH').toUpperCase()}-INV-${invoiceId || '001'}`;
-
-    const payload = {
-      BusinessShortCode: shortCode,
-      Password: password,
-      Timestamp: timestamp,
-      TransactionType: 'CustomerPayBillOnline',
-      Amount: Math.round(Number(amount) || 1), // Integer required
-      PartyA: formattedPhone,
-      PartyB: shortCode,
-      PhoneNumber: formattedPhone,
-      CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://reymass-tech-suite.onrender.com/api/mpesa/callback',
-      AccountReference: accountReference,
-      TransactionDesc: `Reymass ${subsidiaryCode || 'TECH'} Payment`
-    };
-
-    console.log('--- Requesting Access Token ---');
-    const token = await getMpesaToken();
-    console.log('--- Token Received Successfully ---');
-
-    const response = await axios.post(
-      'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
-      payload,
+    const response = await axios.get(
+      'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
       {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Basic ${auth}`
         }
       }
     );
 
-    console.log('STK Push Success Response:', response.data);
-    res.json({ success: true, data: response.data, accountReference });
+    console.log('M-Pesa OAuth Token Generated Successfully');
 
-  } catch (error) {
-    const errData = error.response ? error.response.data : error.message;
-    console.error('STK Push Detailed Error:', errData);
-    res.status(500).json({ success: false, error: errData });
-  }
-});
-
-// Unified M-Pesa STK Push Endpoint
-app.post('/api/mpesa/stkpush-unified', async (req, res) => {
-  try {
-    const { phoneNumber, amount, invoiceId, subsidiaryCode } = req.body;
-    
-    // Format phone number to 254XXXXXXXXX
-    let formattedPhone = phoneNumber.toString().trim().replace(/^(0|\+?254)/, '254');
-    if (!formattedPhone.startsWith('254')) {
-      formattedPhone = `254${formattedPhone}`;
+    if (!response.data || !response.data.access_token) {
+      throw new Error('No access token returned by Safaricom');
     }
 
-    const shortCode = process.env.MPESA_SHORTCODE || '174379';
-    const passkey = process.env.MPESA_PASSKEY || 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
-    
-    // Timestamp format: YYYYMMDDHHmmss
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
-    const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
+    return response.data.access_token;
 
-    const accountReference = `${(subsidiaryCode || 'TECH').toUpperCase()}-INV-${invoiceId || '001'}`;
+  } catch (error) {
+
+    console.error(
+      'M-Pesa OAuth Error:',
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+}
+
+
+// ============================================
+// KENYA TIMESTAMP
+// Format: YYYYMMDDHHmmss
+// ============================================
+
+function getMpesaTimestamp() {
+
+  const now = new Date();
+
+  const formatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Africa/Nairobi',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23'
+  });
+
+  const parts = formatter.formatToParts(now);
+
+  const values = {};
+
+  parts.forEach(part => {
+    if (part.type !== 'literal') {
+      values[part.type] = part.value;
+    }
+  });
+
+  return (
+    values.year +
+    values.month +
+    values.day +
+    values.hour +
+    values.minute +
+    values.second
+  );
+}
+
+
+// ============================================
+// FORMAT KENYAN PHONE NUMBER
+// ============================================
+
+function formatKenyanPhone(phone) {
+
+  if (!phone) {
+    throw new Error('Phone number is required');
+  }
+
+  let number = String(phone)
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/-/g, '');
+
+  // 0712345678 -> 254712345678
+  if (/^0\d{9}$/.test(number)) {
+    number = '254' + number.substring(1);
+  }
+
+  // 712345678 -> 254712345678
+  else if (/^7\d{8}$/.test(number)) {
+    number = '254' + number;
+  }
+
+  // +254712345678 -> 254712345678
+  else if (/^\+2547\d{8}$/.test(number)) {
+    number = number.substring(1);
+  }
+
+  // Already 254712345678
+  else if (/^2547\d{8}$/.test(number)) {
+    // Do nothing
+  }
+
+  else {
+    throw new Error(
+      'Invalid Kenyan phone number. Use 0712345678 or 254712345678.'
+    );
+  }
+
+  return number;
+}
+
+
+// ============================================
+// STK PUSH
+// ============================================
+
+app.post('/api/mpesa/stkpush-unified', async (req, res) => {
+
+  try {
+
+    const {
+      phoneNumber,
+      amount,
+      invoiceId,
+      subsidiaryCode
+    } = req.body;
+
+
+    // -------------------------------
+    // Validate amount
+    // -------------------------------
+
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid payment amount'
+      });
+    }
+
+    const finalAmount = Math.round(numericAmount);
+
+
+    // -------------------------------
+    // Format phone
+    // -------------------------------
+
+    const formattedPhone = formatKenyanPhone(phoneNumber);
+
+
+    // -------------------------------
+    // Generate timestamp
+    // -------------------------------
+
+    const timestamp = getMpesaTimestamp();
+
+
+    // -------------------------------
+    // Generate password
+    // -------------------------------
+
+    const password = Buffer
+      .from(
+        `${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`
+      )
+      .toString('base64');
+
+
+    // -------------------------------
+    // Account reference
+    // -------------------------------
+
+    const accountReference =
+      `${(subsidiaryCode || 'TECH').toUpperCase()}-INV-${invoiceId || '001'}`;
+
+
+    // -------------------------------
+    // STK Payload
+    // -------------------------------
 
     const payload = {
-      BusinessShortCode: shortCode,
+
+      BusinessShortCode: MPESA_SHORTCODE,
+
       Password: password,
+
       Timestamp: timestamp,
+
       TransactionType: 'CustomerPayBillOnline',
-      Amount: Math.round(Number(amount)), // Must be an integer for Sandbox
+
+      Amount: finalAmount,
+
       PartyA: formattedPhone,
-      PartyB: shortCode,
+
+      PartyB: MPESA_SHORTCODE,
+
       PhoneNumber: formattedPhone,
-      CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://reymass-tech-suite.onrender.com/api/mpesa/callback',
+
+      CallBackURL: MPESA_CALLBACK_URL,
+
       AccountReference: accountReference,
-      TransactionDesc: `Reymass ${subsidiaryCode || 'TECH'} Payment`
+
+      TransactionDesc:
+        `Reymass ${subsidiaryCode || 'TECH'} Payment`
     };
+
+
+    console.log('--------------------------------');
+    console.log('M-PESA STK PUSH');
+    console.log('Phone:', formattedPhone);
+    console.log('Amount:', finalAmount);
+    console.log('Timestamp:', timestamp);
+    console.log('Account:', accountReference);
+    console.log('Callback:', MPESA_CALLBACK_URL);
+    console.log('--------------------------------');
+
+
+    // -------------------------------
+    // Get OAuth Token
+    // -------------------------------
 
     const token = await getMpesaToken();
 
+
+    // -------------------------------
+    // Send STK Push
+    // -------------------------------
+
     const response = await axios.post(
       'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+
       payload,
+
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -310,21 +279,64 @@ app.post('/api/mpesa/stkpush-unified', async (req, res) => {
       }
     );
 
-    console.log('STK Push Success Response:', response.data);
-    res.json({ success: true, data: response.data, accountReference });
+
+    console.log(
+      'STK Push Response:',
+      JSON.stringify(response.data, null, 2)
+    );
+
+
+    return res.json({
+
+      success: true,
+
+      data: response.data,
+
+      accountReference
+
+    });
+
 
   } catch (error) {
-    const errData = error.response ? error.response.data : error.message;
-    console.error('STK Push Detailed Error:', errData);
-    res.status(500).json({ success: false, error: errData });
+
+    console.error(
+      'STK Push Error:',
+      error.response?.data || error.message
+    );
+
+
+    return res.status(500).json({
+
+      success: false,
+
+      error: error.response?.data || error.message
+
+    });
+
   }
+
 });
 
-// Fallback Route
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
-app.listen(PORT, () => {
-  console.log(`Reymass ERP Server running on port ${PORT}`);
+// ============================================
+// M-PESA CALLBACK
+// ============================================
+
+app.post('/api/mpesa/callback', (req, res) => {
+
+  console.log('================================');
+  console.log('M-PESA CALLBACK RECEIVED');
+  console.log('================================');
+
+  console.log(
+    JSON.stringify(req.body, null, 2)
+  );
+
+
+  // Always acknowledge Safaricom
+  res.json({
+    ResultCode: 0,
+    ResultDesc: 'Accepted'
+  });
+
 });
