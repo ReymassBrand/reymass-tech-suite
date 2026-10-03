@@ -173,22 +173,31 @@ app.post('/api/projects', (req, res) => {
   });
 });
 
-// M-Pesa Token Helper
+// Cleaned M-Pesa Token Helper
 async function getMpesaToken() {
-  const consumerKey = process.env.MPESA_CONSUMER_KEY || 'obwk59KLi8Yj6amsXHPey8nhIia7DCq8GoOdqgkUsRbIdShM';
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'sGAMoExEenhibAEVvxaJYShmQGAJ3PHaVul63tqOlHUiYPLtUe4LAPpi51SXbgAv';
+  const consumerKey = (process.env.MPESA_CONSUMER_KEY || 'obwk59KLi8Yj6amsXHPey8nhIia7DCq8GoOdqgkUsRbIdShM').trim();
+  const consumerSecret = (process.env.MPESA_CONSUMER_SECRET || 'sGAMoExEenhibAEVvxaJYShmQGAJ3PHaVul63tqOlHUiYPLtUe4LAPpi51SXbgAv').trim();
   
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
   try {
     const response = await axios.get(
-      'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-      { headers: { Authorization: `Basic ${auth}` } }
+      'https://sandbox.safaricom.co.ke/oauth/v1/generate',
+      {
+        params: { grant_type: 'client_credentials' },
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json'
+        }
+      }
     );
-    return response.data.access_token;
+
+    const token = response.data.access_token;
+    console.log('Successfully acquired M-Pesa OAuth Token');
+    return token;
   } catch (error) {
-    console.error('M-Pesa Token Error:', error.response ? error.response.data : error.message);
-    throw error;
+    console.error('M-Pesa Token Error Details:', error.response ? error.response.data : error.message);
+    throw new Error('Failed to obtain valid access token from Safaricom');
   }
 }
 
