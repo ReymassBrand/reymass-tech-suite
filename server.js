@@ -173,9 +173,8 @@ app.post('/api/projects', (req, res) => {
   });
 });
 
-// M-Pesa Authentication Token Helper
+// M-Pesa Token Helper
 async function getMpesaToken() {
-  // Use environment variable names, fallback to raw sandbox keys if env vars are missing
   const consumerKey = process.env.MPESA_CONSUMER_KEY || 'obwk59KLi8Yj6amsXHPey8nhIia7DCq8GoOdqgkUsRbIdShM';
   const consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'sGAMoExEenhibAEVvxaJYShmQGAJ3PHaVul63tqOlHUiYPLtUe4LAPpi51SXbgAv';
   
@@ -184,27 +183,30 @@ async function getMpesaToken() {
   try {
     const response = await axios.get(
       'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-      {
-        headers: {
-          Authorization: `Basic ${auth}`
-        }
-      }
+      { headers: { Authorization: `Basic ${auth}` } }
     );
     return response.data.access_token;
   } catch (error) {
-    console.error('Failed to obtain M-Pesa token:', error.response ? error.response.data : error.message);
+    console.error('M-Pesa Token Error:', error.response ? error.response.data : error.message);
     throw error;
   }
 }
 
-// Unified M-Pesa Paybill Endpoint
+// Unified M-Pesa STK Push Endpoint
 app.post('/api/mpesa/stkpush-unified', async (req, res) => {
   try {
     const { phoneNumber, amount, invoiceId, subsidiaryCode } = req.body;
-    const formattedPhone = phoneNumber.replace(/^(0|\+?254)/, '254');
+    
+    // Format phone number to 254XXXXXXXXX
+    let formattedPhone = phoneNumber.toString().trim().replace(/^(0|\+?254)/, '254');
+    if (!formattedPhone.startsWith('254')) {
+      formattedPhone = `254${formattedPhone}`;
+    }
 
     const shortCode = process.env.MPESA_SHORTCODE || '174379';
     const passkey = process.env.MPESA_PASSKEY || 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919';
+    
+    // Timestamp format: YYYYMMDDHHmmss
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');
 
@@ -215,26 +217,35 @@ app.post('/api/mpesa/stkpush-unified', async (req, res) => {
       Password: password,
       Timestamp: timestamp,
       TransactionType: 'CustomerPayBillOnline',
-      Amount: amount,
+      Amount: Math.round(Number(amount)), // Must be an integer for Sandbox
       PartyA: formattedPhone,
       PartyB: shortCode,
       PhoneNumber: formattedPhone,
-      CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://example.com/callback',
+      CallBackURL: process.env.MPESA_CALLBACK_URL || 'https://reymass-tech-suite.onrender.com/api/mpesa/callback',
       AccountReference: accountReference,
       TransactionDesc: `Reymass ${subsidiaryCode || 'TECH'} Payment`
     };
 
     const token = await getMpesaToken();
+
     const response = await axios.post(
       'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
       payload,
-      { headers: { Authorization: `Bearer ${token}` } }
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
+    console.log('STK Push Success Response:', response.data);
     res.json({ success: true, data: response.data, accountReference });
+
   } catch (error) {
-    console.error('STK Push Error:', error.response ? error.response.data : error.message);
-    res.status(500).json({ success: false, message: 'STK Push Initiation Failed' });
+    const errData = error.response ? error.response.data : error.message;
+    console.error('STK Push Detailed Error:', errData);
+    res.status(500).json({ success: false, error: errData });
   }
 });
 
