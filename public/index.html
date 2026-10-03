@@ -71,6 +71,12 @@
                     <i class="fa-solid fa-shield-halved mr-2"></i>Reymass Admin
                     <span id="admin-badge" class="ml-2 px-1.5 py-0.5 text-xs bg-teal-500 text-slate-950 font-bold rounded-full">3</span>
                 </button>
+            <div class="subsidiary-bar">
+  <button class="sub-btn active" onclick="filterSubsidiary('ALL')">All Subsidiaries</button>
+  <button class="sub-btn" onclick="filterSubsidiary('TECH')">Reymass Tech</button>
+  <button class="sub-btn" onclick="filterSubsidiary('AGRI')">Reymass Agri</button>
+  <button class="sub-btn" onclick="filterSubsidiary('CONSULT')">Reymass Consulting</button>
+</div>
             </nav>
 
             <!-- Quick Action / Interactive Demo Helper -->
@@ -89,6 +95,77 @@
                 </div>
             </div>
         </div>
+<style>
+  /* --- REYMASS BRAND THEME COLORS --- */
+  :root {
+    --primary-color: #0056b3;    /* Main brand color (Navbar, Buttons) */
+    --primary-hover: #004085;    /* Button hover state */
+    --secondary-color: #17a2b8;  /* Secondary accents */
+    --accent-color: #28a745;     /* Success badges / Escrow actions */
+    --bg-light: #f8f9fa;         /* Page background */
+    --text-dark: #212529;        /* Main text color */
+  }
+
+  body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+  }
+
+  /* --- HEADER & LOGO STYLING --- */
+  .navbar {
+    background-color: var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .brand-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .brand-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  /* --- BUTTON THEME STYLING --- */
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .btn-mpesa {
+    background-color: var(--accent-color);
+    color: #ffffff;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
     </header>
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 custom-scrollbar">
